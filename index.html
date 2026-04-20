@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Yen Garage — Sistema de Control Operativo para talleres automotrices" />
+  <meta name="theme-color" content="#1a1a1a" />
+
+  <!-- PWA: icono en pantalla de inicio -->
+  <link rel="apple-touch-icon" href="assets/icon.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <title>Yen Garage — Control Operativo</title>
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Estilos separados por módulo -->
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       SHELL DE LA APLICACION
+  ============================================================ -->
+  <div class="app" id="app">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="brand">YEN <span>GARAGE</span></div>
+      <div class="header-badge">CTRL v4</div>
+    </header>
+
+    <!-- AREA DE SCROLL -->
+    <div class="scroll-area" id="scrollArea">
+
+      <!-- ======================================================
+           PAGINA: REGISTRO (Rentabilidad por trabajo)
+      ====================================================== -->
+      <div class="page active" id="page-registro">
+
+        <!-- Datos del trabajo -->
+        <div class="card">
+          <div class="section-title">
+            Datos del Trabajo
+            <span class="section-sub">Identifica el proyecto</span>
+          </div>
+
+          <div class="grid-2">
+            <div class="field-group">
+              <label class="field-label">Vehiculo <span class="req">*</span></label>
+              <input class="field-input" id="r-vehiculo" placeholder="Toyota Corolla 2020" oninput="calcular()" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Cliente</label>
+              <input class="field-input" id="r-cliente" placeholder="Nombre del cliente" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Tipo de trabajo <span class="req">*</span></label>
+            <select class="field-select" id="r-tipo" onchange="calcular()">
+              <option value="">Seleccionar tipo...</option>
+              <option>Pintura completa</option>
+              <option>Pintura parcial</option>
+              <option>Enderezado y pintura</option>
+              <option>Enderezado sin pintura</option>
+              <option>Preparacion de superficie</option>
+              <option>Pulido y detallado</option>
+              <option>Vinilado</option>
+              <option>Otro</option>
+            </select>
+          </div>
+
+          <div class="grid-2">
+            <div class="field-group">
+              <label class="field-label">Folio / OT</label>
+              <input class="field-input" id="r-folio" placeholder="OT-001" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Fecha</label>
+              <input class="field-input" id="r-fecha" type="date" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Prioridad del trabajo</label>
+            <select class="field-select" id="r-prioridad" onchange="calcular()">
+              <option value="1">Normal — sin recargo</option>
+              <option value="1.15">Urgente — +15%</option>
+              <option value="1.25">Express — +25%</option>
+            </select>
+          </div>
+        </div>
+        <!-- /Datos del trabajo -->
+
+        <!-- Materiales -->
+        <div class="card">
+          <div class="section-title">
+            Materiales
+            <span class="section-sub">Costo fisico directo</span>
+          </div>
+
+          <!-- Encabezados de columna -->
+          <div class="cost-col-headers">
+            <div class="col-h col-h--left">Insumo</div>
+            <div class="col-h">$ Unit</div>
+            <div class="col-h">Cant</div>
+            <div class="col-h"></div>
+          </div>
+
+          <!-- Pintura y acabados -->
+          <div class="cost-section-label">Pintura y acabados</div>
+          <div id="mat-pintura">
+            <div class="cost-row">
+              <div class="cost-name">Pintura base</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Barniz / Clear</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Thinner / Solvente</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Fondo / Primer</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+          </div>
+          <button class="add-row-btn" onclick="addRow('mat-pintura')">+ Agregar insumo de pintura</button>
+
+          <!-- Preparacion -->
+          <div class="cost-section-label" style="margin-top: 14px;">Preparacion de superficie</div>
+          <div id="mat-prep">
+            <div class="cost-row">
+              <div class="cost-name">Masilla / Pasta</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Lijas — varios granos</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Desengrasante</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+          </div>
+          <button class="add-row-btn" onclick="addRow('mat-prep')">+ Agregar insumo de preparacion</button>
+
+          <!-- Proteccion -->
+          <div class="cost-section-label" style="margin-top: 14px;">Proteccion y enmascarado</div>
+          <div id="mat-otros">
+            <div class="cost-row">
+              <div class="cost-name">Cinta / Plastico protector</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+          </div>
+          <button class="add-row-btn" onclick="addRow('mat-otros')">+ Agregar material de proteccion</button>
+        </div>
+        <!-- /Materiales -->
+
+        <!-- Mano de obra -->
+        <div class="card">
+          <div class="section-title">
+            Mano de Obra
+            <span class="section-sub">Tiempo = dinero real</span>
+          </div>
+
+          <div class="cost-col-headers">
+            <div class="col-h col-h--left">Tecnico / Tarea</div>
+            <div class="col-h">$/hr</div>
+            <div class="col-h">Hrs</div>
+            <div class="col-h"></div>
+          </div>
+
+          <div id="mano-obra">
+            <div class="cost-row">
+              <div class="cost-name">Tecnico principal</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Ayudante / Preparador</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Pintor especialista</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+          </div>
+          <button class="add-row-btn" onclick="addRow('mano-obra')">+ Agregar tecnico</button>
+        </div>
+        <!-- /Mano de obra -->
+
+        <!-- Gastos indirectos -->
+        <div class="card">
+          <div class="section-title">
+            Gastos Indirectos
+            <span class="section-sub">Los que se olvidan cobrar</span>
+          </div>
+
+          <div class="cost-col-headers">
+            <div class="col-h col-h--left">Concepto</div>
+            <div class="col-h">Monto</div>
+            <div class="col-h">Factor</div>
+            <div class="col-h"></div>
+          </div>
+
+          <div id="indirectos">
+            <div class="cost-row">
+              <div class="cost-name">Servicios del taller</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Renta prorrateada</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Traslados y logistica</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Depreciacion de equipos</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+            <div class="cost-row">
+              <div class="cost-name">Fondo de imprevistos</div>
+              <input class="cost-input" placeholder="0" oninput="calcRow(this); calcular()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="calcRow(this); calcular()" />
+              <button class="del-btn" onclick="delRow(this)" aria-label="Eliminar fila">x</button>
+            </div>
+          </div>
+          <button class="add-row-btn" onclick="addRow('indirectos')">+ Agregar gasto indirecto</button>
+        </div>
+        <!-- /Gastos indirectos -->
+
+        <!-- Margen objetivo -->
+        <div class="card">
+          <div class="section-title">
+            Margen Objetivo
+            <span class="section-sub">Ganancia deseada</span>
+          </div>
+          <div class="slider-group">
+            <div class="slider-labels">
+              Margen deseado
+              <span id="r-margenDisplay">30%</span>
+            </div>
+            <input
+              type="range"
+              min="5"
+              max="80"
+              value="30"
+              id="r-margenSlider"
+              oninput="updateMargen(); calcular()"
+            />
+          </div>
+        </div>
+
+        <!-- Precio sugerido -->
+        <div class="precio-box">
+          <div class="precio-label">Precio minimo sugerido</div>
+          <div class="precio-value">
+            <span class="precio-symbol">$</span>
+            <span id="r-precioSug">0.00</span>
+          </div>
+          <div class="precio-sub">Costos reales + margen + factor de prioridad</div>
+        </div>
+
+        <!-- Desglose y veredicto -->
+        <div class="result-block">
+          <div class="section-title">
+            Desglose de Costos
+            <span class="section-sub">Composicion del costo total</span>
+          </div>
+
+          <div class="desglose-row">
+            <div class="d-color" style="background: var(--accent);"></div>
+            <div class="d-name">Materiales</div>
+            <div class="d-pct" id="r-pctMat">0%</div>
+            <div class="d-amt" id="r-amtMat">$0</div>
+          </div>
+          <div class="mini-bar">
+            <div class="mini-fill" id="r-barMat" style="width: 0%; background: var(--accent);"></div>
+          </div>
+
+          <div class="desglose-row">
+            <div class="d-color" style="background: var(--blue);"></div>
+            <div class="d-name">Mano de obra</div>
+            <div class="d-pct" id="r-pctMO">0%</div>
+            <div class="d-amt" id="r-amtMO">$0</div>
+          </div>
+          <div class="mini-bar">
+            <div class="mini-fill" id="r-barMO" style="width: 0%; background: var(--blue);"></div>
+          </div>
+
+          <div class="desglose-row">
+            <div class="d-color" style="background: var(--muted);"></div>
+            <div class="d-name">Indirectos</div>
+            <div class="d-pct" id="r-pctInd">0%</div>
+            <div class="d-amt" id="r-amtInd">$0</div>
+          </div>
+          <div class="mini-bar" style="margin-bottom: 10px;">
+            <div class="mini-fill" id="r-barInd" style="width: 0%; background: var(--muted);"></div>
+          </div>
+
+          <div class="result-line">
+            <div class="result-label">Costo total real</div>
+            <div class="result-value" id="r-costoTotal">$0.00</div>
+          </div>
+          <div class="result-line">
+            <div class="result-label">Factor de prioridad aplicado</div>
+            <div class="result-value result-value--muted" id="r-factorPrio">x1.00</div>
+          </div>
+          <div class="result-line">
+            <div class="result-label">Precio que cobras al cliente</div>
+            <input
+              class="cost-input cost-input--price"
+              id="r-precioCobrado"
+              placeholder="Ingresa el precio"
+              oninput="calcularVeredicto()"
+            />
+          </div>
+          <div class="result-line">
+            <div class="result-label">Ganancia real del trabajo</div>
+            <div class="result-value" id="r-gananciaReal">$0.00</div>
+          </div>
+        </div>
+
+        <!-- Barra de margen real -->
+        <div class="margen-bar-label-text">Margen real sobre precio cobrado</div>
+        <div class="margen-bar-wrap">
+          <div class="margen-bar" id="r-margenBar" style="width: 0%;"></div>
+          <div class="margen-label" id="r-margenPct">0%</div>
+        </div>
+
+        <!-- Veredicto -->
+        <div class="veredicto" id="r-veredicto">
+          <div class="v-title">INGRESA LOS DATOS</div>
+          <div class="v-sub">Completa materiales, mano de obra y precio cobrado</div>
+        </div>
+
+        <!-- Notas internas -->
+        <div class="card">
+          <label class="field-label" style="display: block; margin-bottom: 6px;">Notas del trabajo</label>
+          <textarea
+            class="nota-input"
+            id="r-notas"
+            placeholder="Observaciones, acuerdos con el cliente, detalles tecnicos..."
+          ></textarea>
+        </div>
+
+        <!-- Acciones -->
+        <div class="btn-row">
+          <button class="btn-primary" onclick="guardarTrabajo()">GUARDAR TRABAJO</button>
+          <button class="btn-secondary" onclick="irACotizacion()">COTIZAR</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn-secondary btn-secondary--full" onclick="limpiarRegistro()">LIMPIAR FORMULARIO</button>
+        </div>
+
+      </div>
+      <!-- /page-registro -->
+
+
+      <!-- ======================================================
+           PAGINA: COTIZACION
+      ====================================================== -->
+      <div class="page" id="page-cotizacion">
+
+        <!-- Datos del documento -->
+        <div class="card">
+          <div class="section-title">
+            Datos de la Cotizacion
+            <span class="section-sub">Identificacion del documento</span>
+          </div>
+
+          <div class="grid-2">
+            <div class="field-group">
+              <label class="field-label">Numero de cotizacion</label>
+              <input class="field-input" id="c-numero" placeholder="COT-2024-001" oninput="renderCot()" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Fecha</label>
+              <input class="field-input" id="c-fecha" type="date" oninput="renderCot()" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field-group">
+              <label class="field-label">Cliente</label>
+              <input class="field-input" id="c-cliente" placeholder="Nombre completo" oninput="renderCot()" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Telefono / Email</label>
+              <input class="field-input" id="c-tel" placeholder="664 000 0000" oninput="renderCot()" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field-group">
+              <label class="field-label">Vehiculo</label>
+              <input class="field-input" id="c-vehiculo" placeholder="Marca Modelo Ano" oninput="renderCot()" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Color actual</label>
+              <input class="field-input" id="c-color" placeholder="Blanco perla" oninput="renderCot()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Partidas de servicio -->
+        <div class="card">
+          <div class="section-title">
+            Partidas del Servicio
+            <span class="section-sub">Que incluye esta cotizacion</span>
+          </div>
+
+          <div class="partida-headers">
+            <div>Descripcion</div>
+            <div>Cant</div>
+            <div>$ Unit</div>
+            <div></div>
+          </div>
+
+          <div id="cot-partidas">
+            <div class="partida-row">
+              <input class="cost-input cost-input--desc" placeholder="Descripcion del servicio..." oninput="renderCot()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="renderCot()" />
+              <input class="cost-input" placeholder="0.00" oninput="renderCot()" />
+              <button class="del-btn" onclick="delPartida(this)" aria-label="Eliminar partida">x</button>
+            </div>
+            <div class="partida-row">
+              <input class="cost-input cost-input--desc" placeholder="Descripcion del servicio..." oninput="renderCot()" />
+              <input class="cost-input" placeholder="1" value="1" oninput="renderCot()" />
+              <input class="cost-input" placeholder="0.00" oninput="renderCot()" />
+              <button class="del-btn" onclick="delPartida(this)" aria-label="Eliminar partida">x</button>
+            </div>
+          </div>
+          <button class="add-row-btn" onclick="addPartida()">+ Agregar partida</button>
+        </div>
+
+        <!-- Condiciones -->
+        <div class="card">
+          <div class="section-title">
+            Condiciones
+            <span class="section-sub">Terminos del servicio</span>
+          </div>
+
+          <div class="toggle-row">
+            <span>Incluir IVA (16%)</span>
+            <label class="toggle-sw">
+              <input type="checkbox" id="c-iva" onchange="renderCot()" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <span>Mostrar desglose de costos</span>
+            <label class="toggle-sw">
+              <input type="checkbox" id="c-desglose" onchange="renderCot()" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+
+          <div class="field-group" style="margin-top: 12px;">
+            <label class="field-label">Anticipo requerido</label>
+            <select class="field-select" id="c-anticipo" onchange="renderCot()">
+              <option value="0">Sin anticipo</option>
+              <option value="30">30% de anticipo</option>
+              <option value="50">50% de anticipo</option>
+              <option value="70">70% de anticipo</option>
+              <option value="100">100% pago adelantado</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Tiempo estimado de entrega</label>
+            <input class="field-input" id="c-tiempo" placeholder="Ej: 3-5 dias habiles" oninput="renderCot()" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Validez de la cotizacion</label>
+            <div class="validity-row" id="validity-row">
+              <button class="val-pill sel" onclick="setValidity(this, '7 dias')">7 dias</button>
+              <button class="val-pill" onclick="setValidity(this, '15 dias')">15 dias</button>
+              <button class="val-pill" onclick="setValidity(this, '30 dias')">30 dias</button>
+              <button class="val-pill" onclick="setValidity(this, 'Sin limite')">Sin limite</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Notas y condiciones adicionales</label>
+            <textarea
+              class="nota-input"
+              id="c-notas"
+              placeholder="Garantia, exclusiones del servicio, materiales incluidos..."
+              oninput="renderCot()"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Vista previa del documento -->
+        <div class="preview-label">Vista previa del documento</div>
+        <div class="cot-preview" id="cotDoc">
+
+          <div class="cot-header-bar">
+            <div class="cot-brand-big">YEN <span>GARAGE</span></div>
+            <div class="cot-num-line">
+              <div class="cot-num-badge" id="cd-numero">COT-001</div>
+              <div class="cot-date-small" id="cd-fecha">—</div>
+            </div>
+          </div>
+
+          <div class="cot-body-pad">
+            <div class="cot-client-info">
+              <div>
+                <div class="cot-ci-label">Preparado para</div>
+                <div class="cot-ci-val" id="cd-cliente">—</div>
+                <div class="cot-ci-sub" id="cd-tel"></div>
+              </div>
+              <div>
+                <div class="cot-ci-label">Vehiculo</div>
+                <div class="cot-ci-val" id="cd-vehiculo">—</div>
+                <div class="cot-ci-sub" id="cd-color"></div>
+              </div>
+            </div>
+
+            <div id="cd-table"></div>
+
+            <div class="cot-totals" id="cd-totals" style="display: none;">
+              <div class="cot-total-row">
+                <div class="cot-tl">Subtotal</div>
+                <div class="cot-tv" id="cd-subtotal">$0</div>
+              </div>
+              <div class="cot-total-row" id="cd-iva-row" style="display: none;">
+                <div class="cot-tl">IVA 16%</div>
+                <div class="cot-tv" id="cd-iva">$0</div>
+              </div>
+              <div class="cot-total-row" id="cd-ant-row" style="display: none;">
+                <div class="cot-tl">Anticipo requerido</div>
+                <div class="cot-tv" id="cd-ant">$0</div>
+              </div>
+              <div class="cot-total-row cot-total-grand">
+                <div class="cot-tl">TOTAL</div>
+                <div class="cot-tv" id="cd-total">$0</div>
+              </div>
+            </div>
+
+            <div id="cd-tiempo" style="display: none;" class="cot-tiempo">
+              Tiempo estimado:
+              <strong id="cd-tiempo-val"></strong>
+            </div>
+
+            <div id="cd-notas-wrap" style="display: none;" class="cot-notas-wrap">
+              <div class="cot-notas-title">Notas y condiciones</div>
+              <span id="cd-notas"></span>
+            </div>
+
+            <div class="cot-validez">
+              Valida por: <span id="cd-validez">7 dias</span>
+            </div>
+          </div>
+
+          <div class="cot-footer-bar">
+            <div>Yen Garage — Taller de Pintura Automotriz</div>
+            <div id="cd-footer-num">COT-001</div>
+          </div>
+
+        </div>
+        <!-- /cotDoc -->
+
+        <div class="btn-row" style="margin-top: 12px;">
+          <button class="btn-primary" onclick="guardarCotizacion()">GUARDAR COTIZACION</button>
+          <button class="btn-secondary" onclick="window.print()">IMPRIMIR</button>
+        </div>
+
+      </div>
+      <!-- /page-cotizacion -->
+
+
+      <!-- ======================================================
+           PAGINA: HISTORIAL
+      ====================================================== -->
+      <div class="page" id="page-historial">
+
+        <!-- Estadisticas globales -->
+        <div class="stats-grid" id="dash-stats">
+          <div class="stat-card stat-card--green">
+            <div class="stat-label">Ganancia total</div>
+            <div class="stat-val" id="ds-ganancia">$0</div>
+            <div class="stat-sub">acumulada</div>
+          </div>
+          <div class="stat-card stat-card--yellow">
+            <div class="stat-label">Margen promedio</div>
+            <div class="stat-val" id="ds-margen">0%</div>
+            <div class="stat-sub" id="ds-margen-sub">sin datos</div>
+          </div>
+          <div class="stat-card stat-card--blue">
+            <div class="stat-label">Facturacion</div>
+            <div class="stat-val" id="ds-factura">$0</div>
+            <div class="stat-sub">precio cobrado</div>
+          </div>
+          <div class="stat-card stat-card--ink">
+            <div class="stat-label">Proyectos</div>
+            <div class="stat-val" id="ds-count">0</div>
+            <div class="stat-sub" id="ds-count-sub">0 rentables</div>
+          </div>
+        </div>
+
+        <!-- Analisis nivel 2 -->
+        <div class="card" id="analysis-block" style="display: none;">
+          <div class="section-title">
+            Analisis de Rentabilidad
+            <span class="section-sub">Por desempeno</span>
+          </div>
+
+          <div class="analysis-group-label analysis-group-label--up">Mayor margen</div>
+          <div id="top-rentables"></div>
+
+          <div class="analysis-group-label analysis-group-label--down" style="margin-top: 14px;">Menor margen</div>
+          <div id="top-perdidas"></div>
+        </div>
+
+        <!-- Lista de trabajos -->
+        <div class="card">
+          <div class="section-title">
+            Trabajos Registrados
+            <span class="section-sub">Toca para ver detalle</span>
+          </div>
+
+          <div class="filter-bar">
+            <input
+              class="filter-input"
+              id="h-search"
+              placeholder="Buscar vehiculo, cliente..."
+              oninput="renderHistorial()"
+            />
+            <select class="filter-select" id="h-filter" onchange="renderHistorial()">
+              <option value="todos">Todos</option>
+              <option value="rentable">Rentable</option>
+              <option value="warning">Bajo margen</option>
+              <option value="perdida">Perdida</option>
+            </select>
+          </div>
+
+          <div id="lista-trabajos">
+            <div class="empty-state">
+              <div class="empty-text">No hay trabajos guardados aun</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de cotizaciones -->
+        <div class="card">
+          <div class="section-title">
+            Cotizaciones Generadas
+            <span class="section-sub">Registro de propuestas</span>
+          </div>
+          <div id="lista-cotizaciones">
+            <div class="empty-state">
+              <div class="empty-text">No hay cotizaciones guardadas</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /page-historial -->
+
+    </div>
+    <!-- /scroll-area -->
+
+    <!-- NAVEGACION INFERIOR -->
+    <nav class="bottom-nav" role="navigation" aria-label="Navegacion principal">
+      <button class="nav-btn active" onclick="goPage('registro', this)" aria-label="Registro">
+        <span class="nav-icon">RG</span>
+        <span class="nav-label">Registro</span>
+      </button>
+      <button class="nav-btn" onclick="goPage('cotizacion', this)" aria-label="Cotizacion">
+        <span class="nav-icon">CT</span>
+        <span class="nav-label">Cotizacion</span>
+        <span class="nav-badge" id="badge-cot" style="display: none;">0</span>
+      </button>
+      <button class="nav-btn" onclick="goPage('historial', this)" aria-label="Historial">
+        <span class="nav-icon">HS</span>
+        <span class="nav-label">Historial</span>
+        <span class="nav-badge" id="badge-hist" style="display: none;">0</span>
+      </button>
+    </nav>
+
+  </div>
+  <!-- /app -->
+
+
+  <!-- ============================================================
+       MODAL DE DETALLE DE TRABAJO
+  ============================================================ -->
+  <div class="modal-overlay" id="detailModal" onclick="closeDetailOnOverlay(event)" role="dialog" aria-modal="true" aria-label="Detalle del trabajo">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">Detalle</div>
+        <button class="modal-close" onclick="closeDetail()" aria-label="Cerrar">x</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       DIALOGO DE CONFIRMACION
+  ============================================================ -->
+  <div class="confirm-overlay" id="confirmOverlay" role="alertdialog" aria-modal="true">
+    <div class="confirm-box">
+      <div class="confirm-title" id="confirm-title">Confirmar eliminacion</div>
+      <div class="confirm-desc" id="confirm-desc">Esta accion no se puede deshacer.</div>
+      <div class="confirm-btns">
+        <button class="btn-secondary" onclick="closeConfirm()">CANCELAR</button>
+        <button class="btn-primary btn-primary--danger" onclick="executeConfirm()">ELIMINAR</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       JAVASCRIPT — separado por modulo
+  ============================================================ -->
+  <script src="js/db.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/registro.js"></script>
+  <script src="js/cotizacion.js"></script>
+  <script src="js/historial.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
