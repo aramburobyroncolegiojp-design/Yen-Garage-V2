@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Yen Garage — Rentabilidad por Vehículo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f0e8;
+  --surface: #ffffff;
+  --surface2: #ede8df;
+  --border: #d4cfc6;
+  --ink: #1a1a1a;
+  --muted: #888880;
+  --accent: #c1440e;
+  --accent2: #1a6b3c;
+  --accent3: #1a3a6b;
+  --yellow: #e8a020;
+  --red: #c1440e;
+  --green: #1a6b3c;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--accent);
+}
+
+.header h1 {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 32px;
+  letter-spacing: 3px;
+}
+
+.header h1 span {
+  color: var(--accent);
+}
+
+/* LAYOUT */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px;
+}
+
+.grid-main {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+}
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* INPUTS */
+.field-input,
+.cost-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink);
+  width: 100%;
+}
+
+/* COST ROW */
+.cost-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 80px 80px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.cost-subtotal {
+  text-align: right;
+  font-weight: bold;
+}
+
+/* RESULT */
+.result-block {
+  background: var(--surface);
+  padding: 20px;
+  border: 1px solid var(--border);
+}
+
+.precio-box {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 20px;
+  text-align: center;
+}
+
+.precio-value {
+  font-size: 40px;
+  font-family: 'Bebas Neue', cursive;
+}
+
+/* VEREDICTO */
+.veredicto {
+  padding: 20px;
+  text-align: center;
+  border: 2px solid var(--ink);
+}
+
+.veredicto.rentable {
+  background: var(--green);
+  color: white;
+}
+
+.veredicto.warning {
+  background: var(--yellow);
+}
+
+.veredicto.perdida {
+  background: var(--red);
+  color: white;
+}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+ <div>
+   <h1>RENTABILIDAD <span>POR VEHÍCULO</span></h1>
+   <div class="header-sub">Sistema 2 — Control de costos y márgenes reales</div>
+ </div>
+ <div class="sistema-badge">SISTEMA 02</div>
+</div>
+
+<div class="container">
+<div class="grid-main">
+
+ <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+
+ <div>
+
+```
+<!-- DATOS DEL VEHÍCULO -->
+<div class="card">
+ <div class="section-title">
+   Datos del Trabajo
+   <span class="sub">Identifica el proyecto</span>
+ </div>
+
+ <div class="vehicle-header">
+   <div class="field-group">
+     <div class="field-label">Vehículo / Modelo</div>
+     <input class="field-input" id="vehiculo" placeholder="Ej: Toyota Corolla 2020" oninput="calcular()">
+   </div>
+   <div class="field-group">
+     <div class="field-label">Tipo de Trabajo</div>
+     <input class="field-input" id="tipoTrabajo" placeholder="Ej: Pintura completa" oninput="calcular()">
+   </div>
+   <div class="field-group">
+     <div class="field-label">Cliente</div>
+     <input class="field-input" id="cliente" placeholder="Nombre del cliente" oninput="calcular()">
+   </div>
+   <div class="field-group">
+     <div class="field-label">Fecha</div>
+     <input class="field-input" id="fecha" type="date" oninput="calcular()">
+   </div>
+ </div>
+</div>
+
+<!-- COSTOS DE MATERIALES -->
+<div class="card">
+ <div class="section-title">
+   Materiales e Insumos
+   <span class="sub">Lo que se gasta físicamente</span>
+ </div>
+
+ <div class="cost-headers">
+   <div class="cost-header-label">Insumo</div>
+   <div class="cost-header-label">Costo unit.</div>
+   <div class="cost-header-label">Cantidad</div>
+   <div class="cost-header-label">Subtotal</div>
+ </div>
+
+ <div class="cost-section">
+   <div class="cost-section-title">🎨 Pintura y acabados</div>
+   <div id="materiales-pintura">
+     <div class="cost-row">
+       <div class="cost-name">Pintura base</div>
+       <input class="cost-input" data-group="mat" placeholder="0.00" oninput="calcRow(this); calcular()">
+       <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+       <div class="cost-subtotal" data-subtotal>$0.00</div>
+     </div>
+     <div class="cost-row">
+       <div class="cost-name">Barniz / Clear</div>
+       <input class="cost-input" data-group="mat" placeholder="0.00" oninput="calcRow(this); calcular()">
+       <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+       <div class="cost-subtotal" data-subtotal>$0.00</div>
+     </div>
+     <div class="cost-row">
+       <div class="cost-name">Thinner / Solvente</div>
+       <input class="cost-input" data-group="mat" placeholder="0.00" oninput="calcRow(this); calcular()">
+       <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+       <div class="cost-subtotal" data-subtotal>$0.00</div>
+     </div>
+   </div>
+   <button class="add-row-btn" onclick="addRow('materiales-pintura', 'mat')">+ Agregar insumo</button>
+ </div>
+
+ <div class="cost-section">
+   <div class="cost-section-title">🔧 Preparación y abrasivos</div>
+   <div id="materiales-prep">
+     <div class="cost-row">
+       <div class="cost-name">Masilla / Pasta</div>
+       <input class="cost-input" data-group="mat" placeholder="0.00" oninput="calcRow(this); calcular()">
+       <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+       <div class="cost-subtotal" data-subtotal>$0.00</div>
+     </div>
+     <div class="cost-row">
+       <div class="cost-name">Lijas (varios granos)</div>
+       <input class="cost-input" data-group="mat" placeholder="0.00" oninput="calcRow(this); calcular()">
+       <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+       <div class="cost-subtotal" data-subtotal>$0.00</div>
+     </div>
+     <div class="cost-row">
+       <div class="cost-name">Fondo / Primer</div>
+       <input class="cost-input" data-group="mat" placeholder="0.00" oninput="calcRow(this); calcular()">
+       <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+       <div class="cost-subtotal" data-subtotal>$0.00</div>
+     </div>
+   </div>
+   <button class="add-row-btn" onclick="addRow('materiales-prep', 'mat')">+ Agregar insumo</button>
+ </div>
+
+ <div class="cost-section">
+   <div class="cost-section-title">📦 Otros materiales</div>
+   <div id="materiales-otros">
+     <div class="cost-row">
+       <div class="cost-name">Cinta enmascarar / Plástico</div>
+       <input class="cost-input" data-group="mat" placeholder="0.00" oninput="calcRow(this); calcular()">
+       <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+       <div class="cost-subtotal" data-subtotal>$0.00</div>
+     </div>
+   </div>
+   <button class="add-row-btn" onclick="addRow('materiales-otros', 'mat')">+ Agregar insumo</button>
+ </div>
+</div>
+
+<!-- MANO DE OBRA -->
+<div class="card">
+ <div class="section-title">
+   Mano de Obra
+   <span class="sub">Tiempo = dinero real</span>
+ </div>
+
+ <div class="cost-headers">
+   <div class="cost-header-label">Técnico / Tarea</div>
+   <div class="cost-header-label">$/hora</div>
+   <div class="cost-header-label">Horas</div>
+   <div class="cost-header-label">Subtotal</div>
+ </div>
+
+ <div id="mano-obra">
+   <div class="cost-row">
+     <div class="cost-name">Técnico principal</div>
+     <input class="cost-input" data-group="mo" placeholder="0.00" oninput="calcRow(this); calcular()">
+     <input class="cost-input" data-qty="true" placeholder="0" oninput="calcRow(this); calcular()">
+     <div class="cost-subtotal" data-subtotal>$0.00</div>
+   </div>
+   <div class="cost-row">
+     <div class="cost-name">Ayudante / Prep</div>
+     <input class="cost-input" data-group="mo" placeholder="0.00" oninput="calcRow(this); calcular()">
+     <input class="cost-input" data-qty="true" placeholder="0" oninput="calcRow(this); calcular()">
+     <div class="cost-subtotal" data-subtotal>$0.00</div>
+   </div>
+ </div>
+ <button class="add-row-btn" onclick="addRow('mano-obra', 'mo')">+ Agregar técnico</button>
+</div>
+
+<!-- GASTOS INDIRECTOS -->
+<div class="card">
+ <div class="section-title">
+   Gastos Indirectos
+   <span class="sub">Lo que se olvida cobrar</span>
+ </div>
+
+ <div class="cost-headers">
+   <div class="cost-header-label">Concepto</div>
+   <div class="cost-header-label">Monto</div>
+   <div class="cost-header-label">%</div>
+   <div class="cost-header-label">Total</div>
+ </div>
+
+ <div id="indirectos">
+   <div class="cost-row">
+     <div class="cost-name tooltip" data-tip="Luz, agua, gas del taller">Servicios taller ⓘ</div>
+     <input class="cost-input" data-group="ind" placeholder="0.00" oninput="calcRow(this); calcular()">
+     <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+     <div class="cost-subtotal" data-subtotal>$0.00</div>
+   </div>
+   <div class="cost-row">
+     <div class="cost-name tooltip" data-tip="% del alquiler del taller por trabajo">Renta prorrateada ⓘ</div>
+     <input class="cost-input" data-group="ind" placeholder="0.00" oninput="calcRow(this); calcular()">
+     <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+     <div class="cost-subtotal" data-subtotal>$0.00</div>
+   </div>
+   <div class="cost-row">
+     <div class="cost-name">Traslados / Logística</div>
+     <input class="cost-input" data-group="ind" placeholder="0.00" oninput="calcRow(this); calcular()">
+     <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+     <div class="cost-subtotal" data-subtotal>$0.00</div>
+   </div>
+ </div>
+ <button class="add-row-btn" onclick="addRow('indirectos', 'ind')">+ Agregar gasto</button>
+</div>
+```
+
+ </div>
+
+ <!-- COLUMNA DERECHA: RESULTADOS -->
+
+ <div class="results-sticky">
+
+```
+<!-- MARGEN DESEADO -->
+<div class="card">
+ <div class="section-title">
+   Margen Objetivo
+   <span class="sub">Ajusta tu ganancia</span>
+ </div>
+
+ <div class="slider-group">
+   <div class="slider-label">
+     Margen de ganancia deseado
+     <span id="margenDisplay">30%</span>
+   </div>
+   <input type="range" min="5" max="80" value="30" id="margenSlider" oninput="updateMargen(); calcular()">
+ </div>
+</div>
+
+<!-- PRECIO SUGERIDO -->
+<div class="precio-box">
+ <div class="precio-label">Precio mínimo a cobrar</div>
+ <div class="precio-value"><span>$</span><span id="precioSugerido">0.00</span></div>
+ <div class="precio-sub">Incluye todos los costos + margen objetivo</div>
+</div>
+
+<!-- RESUMEN DE COSTOS -->
+<div class="result-block">
+ <div class="section-title">
+   Desglose Real
+   <span class="sub">De dónde sale el costo</span>
+ </div>
+
+ <div class="desglose-row">
+   <div class="desglose-color" style="background:#c1440e"></div>
+   <div class="desglose-name">Materiales</div>
+   <div class="desglose-pct" id="pctMat">0%</div>
+   <div class="desglose-amt" id="amtMat">$0.00</div>
+ </div>
+ <div class="desglose-row">
+   <div class="desglose-color" style="background:#1a3a6b"></div>
+   <div class="desglose-name">Mano de Obra</div>
+   <div class="desglose-pct" id="pctMO">0%</div>
+   <div class="desglose-amt" id="amtMO">$0.00</div>
+ </div>
+ <div class="desglose-row">
+   <div class="desglose-color" style="background:#888880"></div>
+   <div class="desglose-name">Indirectos</div>
+   <div class="desglose-pct" id="pctInd">0%</div>
+   <div class="desglose-amt" id="amtInd">$0.00</div>
+ </div>
+
+ <hr class="divider">
+
+ <div class="result-line">
+   <div class="result-label">Costo Total Real</div>
+   <div class="result-value" id="costoTotal">$0.00</div>
+ </div>
+
+ <div class="result-line">
+   <div class="result-label">Precio cobrado</div>
+   <input class="cost-input" id="precioCobrado" placeholder="¿Cuánto cobras?" style="width:120px; text-align:right" oninput="calcularVeredicto()">
+ </div>
+
+ <div class="result-line">
+   <div class="result-label">Ganancia real</div>
+   <div class="result-value" id="gananciaReal" style="color:var(--green)">$0.00</div>
+ </div>
+</div>
+
+<!-- BARRA DE MARGEN -->
+<div style="padding: 0 0 4px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--muted)">Margen real sobre precio cobrado</div>
+<div class="margen-bar-wrap">
+ <div class="margen-bar" id="margenBar" style="width:0%">
+ </div>
+ <div class="margen-label" id="margenPct">0%</div>
+</div>
+
+<!-- VEREDICTO -->
+<div class="veredicto" id="veredicto">
+ <span class="veredicto-icon">⚙️</span>
+ <div class="veredicto-title">INGRESA LOS DATOS</div>
+ <div class="veredicto-sub">El sistema calculará si conviene hacer el trabajo</div>
+</div>
+
+<!-- ACCIONES -->
+<div class="actions-bar">
+ <button class="btn-primary" onclick="guardarTrabajo()">GUARDAR TRABAJO</button>
+ <button class="btn-secondary" onclick="limpiar()">LIMPIAR</button>
+</div>
+```
+
+ </div>
+</div>
+
+<!-- HISTORIAL -->
+
+<div class="card full-width" style="margin-top:20px">
+ <div class="section-title">
+   Historial de Trabajos
+   <span class="sub">Rentabilidad acumulada</span>
+ </div>
+
+ <div style="display:grid; grid-template-columns:1fr auto auto auto auto; gap:12px; padding:6px 0; border-bottom:1px solid var(--ink); font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:4px">
+   <div>Vehículo / Trabajo</div>
+   <div>Costo real</div>
+   <div>Precio cobrado</div>
+   <div>Ganancia</div>
+   <div>Estado</div>
+ </div>
+
+ <div id="historial">
+   <div style="padding:20px; text-align:center; color:var(--muted); font-size:11px">
+     — Aún no hay trabajos guardados. Completa el formulario y presiona "Guardar Trabajo" —
+   </div>
+ </div>
+</div>
+
+</div><!-- container -->
+
+<script>
+ // Init fecha
+ document.getElementById('fecha').valueAsDate = new Date();
+
+ function fmt(n) {
+   return '$' + parseFloat(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+ }
+
+ function calcRow(input) {
+   const row = input.closest('.cost-row');
+   const inputs = row.querySelectorAll('.cost-input');
+   const precio = parseFloat(inputs[0].value) || 0;
+   const qty = parseFloat(inputs[1].value) || 0;
+   const subtotal = row.querySelector('[data-subtotal]');
+   if (subtotal) subtotal.textContent = fmt(precio * qty);
+ }
+
+ function sumGroup(containerId) {
+   const container = document.getElementById(containerId);
+   if (!container) return 0;
+   let total = 0;
+   container.querySelectorAll('.cost-row').forEach(row => {
+     const inputs = row.querySelectorAll('.cost-input');
+     const p = parseFloat(inputs[0]?.value) || 0;
+     const q = parseFloat(inputs[1]?.value) || 1;
+     total += p * q;
+   });
+   return total;
+ }
+
+ function calcular() {
+   const mat = sumGroup('materiales-pintura') + sumGroup('materiales-prep') + sumGroup('materiales-otros');
+   const mo = sumGroup('mano-obra');
+   const ind = sumGroup('indirectos');
+   const total = mat + mo + ind;
+
+   const margen = parseInt(document.getElementById('margenSlider').value) / 100;
+   const precio = total > 0 ? total / (1 - margen) : 0;
+
+   document.getElementById('costoTotal').textContent = fmt(total);
+   document.getElementById('precioSugerido').textContent = total > 0 ? (total / (1 - margen)).toLocaleString('es-MX', { minimumFractionDigits: 2 }) : '0.00';
+
+   // Desglose
+   if (total > 0) {
+     document.getElementById('pctMat').textContent = Math.round(mat/total*100) + '%';
+     document.getElementById('pctMO').textContent = Math.round(mo/total*100) + '%';
+     document.getElementById('pctInd').textContent = Math.round(ind/total*100) + '%';
+   }
+   document.getElementById('amtMat').textContent = fmt(mat);
+   document.getElementById('amtMO').textContent = fmt(mo);
+   document.getElementById('amtInd').textContent = fmt(ind);
+
+   calcularVeredicto();
+ }
+
+ function calcularVeredicto() {
+   const costoStr = document.getElementById('costoTotal').textContent.replace(/[$,]/g,'');
+   const costo = parseFloat(costoStr) || 0;
+   const cobrado = parseFloat(document.getElementById('precioCobrado').value) || 0;
+
+   const ganancia = cobrado - costo;
+   const margenReal = cobrado > 0 ? (ganancia / cobrado) * 100 : 0;
+
+   document.getElementById('gananciaReal').textContent = fmt(ganancia);
+   document.getElementById('gananciaReal').style.color = ganancia >= 0 ? 'var(--green)' : 'var(--red)';
+
+   // Barra
+   const bar = document.getElementById('margenBar');
+   const pct = Math.max(0, Math.min(100, margenReal));
+   bar.style.width = pct + '%';
+   document.getElementById('margenPct').textContent = margenReal.toFixed(1) + '%';
+
+   if (margenReal >= 25) {
+     bar.className = 'margen-bar';
+   } else if (margenReal >= 10) {
+     bar.className = 'margen-bar warning';
+   } else {
+     bar.className = 'margen-bar danger';
+   }
+
+   // Veredicto
+   const v = document.getElementById('veredicto');
+   if (costo === 0 && cobrado === 0) {
+     v.className = 'veredicto';
+     v.innerHTML = `<span class="veredicto-icon">⚙️</span><div class="veredicto-title">INGRESA LOS DATOS</div><div class="veredicto-sub">El sistema calculará si conviene</div>`;
+     return;
+   }
+
+   if (cobrado === 0) {
+     v.className = 'veredicto warning';
+     v.innerHTML = `<span class="veredicto-icon">💡</span><div class="veredicto-title">PRECIO MÍNIMO</div><div class="veredicto-sub">Ingresa el precio que cobrarás para ver el veredicto</div>`;
+     return;
+   }
+
+   if (margenReal >= 25) {
+     v.className = 'veredicto rentable';
+     v.innerHTML = `<span class="veredicto-icon">✅</span><div class="veredicto-title">TRABAJO RENTABLE</div><div class="veredicto-sub">Margen ${margenReal.toFixed(1)}% — Ganancia real: ${fmt(ganancia)}</div>`;
+   } else if (margenReal >= 10) {
+     v.className = 'veredicto warning';
+     v.innerHTML = `<span class="veredicto-icon">⚠️</span><div class="veredicto-title">MARGEN BAJO</div><div class="veredicto-sub">Margen ${margenReal.toFixed(1)}% — Considera renegociar el precio</div>`;
+   } else if (margenReal >= 0) {
+     v.className = 'veredicto perdida';
+     v.innerHTML = `<span class="veredicto-icon">🚨</span><div class="veredicto-title">RIESGO DE PÉRDIDA</div><div class="veredicto-sub">Margen ${margenReal.toFixed(1)}% — Casi sin ganancia real</div>`;
+   } else {
+     v.className = 'veredicto perdida';
+     v.innerHTML = `<span class="veredicto-icon">🔴</span><div class="veredicto-title">TRABAJO EN PÉRDIDA</div><div class="veredicto-sub">Estás perdiendo ${fmt(Math.abs(ganancia))} en este trabajo</div>`;
+   }
+ }
+
+ function updateMargen() {
+   const val = document.getElementById('margenSlider').value;
+   document.getElementById('margenDisplay').textContent = val + '%';
+ }
+
+ function addRow(containerId, group) {
+   const container = document.getElementById(containerId);
+   const row = document.createElement('div');
+   row.className = 'cost-row';
+   row.style.animation = 'slideIn 0.3s ease both';
+   row.innerHTML = `
+     <input class="cost-input" placeholder="Nombre del insumo" style="font-size:11px; text-align:left">
+     <input class="cost-input" data-group="${group}" placeholder="0.00" oninput="calcRow(this); calcular()">
+     <input class="cost-input" data-qty="true" placeholder="1" oninput="calcRow(this); calcular()" value="1">
+     <div class="cost-subtotal" data-subtotal>$0.00</div>
+   `;
+   container.appendChild(row);
+ }
+
+ function guardarTrabajo() {
+   const vehiculo = document.getElementById('vehiculo').value || 'Sin nombre';
+   const tipo = document.getElementById('tipoTrabajo').value || '—';
+   const costoStr = document.getElementById('costoTotal').textContent.replace(/[$,]/g,'');
+   const costo = parseFloat(costoStr) || 0;
+   const cobrado = parseFloat(document.getElementById('precioCobrado').value) || 0;
+   const ganancia = cobrado - costo;
+   const margenReal = cobrado > 0 ? (ganancia / cobrado) * 100 : 0;
+
+   const historial = document.getElementById('historial');
+
+   // Quitar placeholder si existe
+   const placeholder = historial.querySelector('div[style*="text-align:center"]');
+   if (placeholder) placeholder.remove();
+
+   const badge = margenReal >= 25 ? 'badge-green" >✅ Rentable' :
+                 margenReal >= 10 ? 'badge-yellow">⚠️ Bajo' : 'badge-red">🔴 Pérdida';
+
+   const item = document.createElement('div');
+   item.className = 'historial-item';
+   item.innerHTML = `
+     <div>
+       <div class="historial-vehicle">${vehiculo}</div>
+       <div style="font-size:10px; color:var(--muted)">${tipo}</div>
+     </div>
+     <div class="historial-cost">${fmt(costo)}</div>
+     <div class="historial-price">${fmt(cobrado)}</div>
+     <div style="font-weight:600; color:${ganancia >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(ganancia)}</div>
+     <div class="rentable-badge ${badge}</div>
+   `;
+   historial.prepend(item);
+
+   alert(`✅ Trabajo guardado: ${vehiculo}\nGanancia: ${fmt(ganancia)} (${margenReal.toFixed(1)}%)`);
+ }
+
+ function limpiar() {
+   if (!confirm('¿Limpiar todos los datos del formulario?')) return;
+   document.querySelectorAll('.cost-input').forEach(i => { i.value = ''; });
+   document.querySelectorAll('[data-subtotal]').forEach(s => { s.textContent = '$0.00'; });
+   document.getElementById('vehiculo').value = '';
+   document.getElementById('tipoTrabajo').value = '';
+   document.getElementById('cliente').value = '';
+   document.getElementById('precioCobrado').value = '';
+   calcular();
+ }
+</script>
+
+</body>
+</html>
